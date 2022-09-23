@@ -36,6 +36,7 @@ class Percolation {
         firsts = new int[N * N]; // store first node of each connected component (linked list)
         lasts = new int[N * N]; // store last node of each connected component (linked list)
         percolatedRegions = new Point2D[N * N];
+        percolated = false;
 
         int i = 0;
         for (Node node : nodes) {
@@ -108,17 +109,11 @@ class Percolation {
 
             int x = 0;
             Node node = nodes[firsts[uf.find(index)]];
-            while (node.next != null) {
+            while (node != null) {
                 percolatedRegions[x] = node.site;
                 x++;
                 node = node.next;
             }
-
-            System.out.println("After:");
-            for (int y = 0; y < size * size; y++) {
-                System.out.println(percolatedRegions[y]);
-            }
-            System.out.println("End!!!!!!!!!!!!!!!!!!!!!");
         }
 
     }
@@ -128,6 +123,10 @@ class Percolation {
     }
 
     public boolean isFull(int i, int j) { // is site (row i, column j) full?
+        if (size == 1) {
+            return isOpen(0, 0);
+        }
+
         for (int x = 0; x < size; x++) {
             if (uf.connected(x, i * size + j))
                 return true;
@@ -137,6 +136,9 @@ class Percolation {
     }
 
     public boolean percolates() { // does the system percolate?
+        if (size == 1) {
+            return isFull(0,0);
+        }
         return ufWithVirtualNode.connected(0, size * size - 1);
     }
 
@@ -146,8 +148,7 @@ class Percolation {
 
         int i = 0;
         int count = 0;
-        System.out.println("This!!!!!!!!!!!!!!!!!!!!!!");
-        while (percolatedRegions[i] != null) {
+        while (i < percolatedRegions.length && percolatedRegions[i] != null) {
             System.out.println(percolatedRegions[i]);
             count++;
             i++;
@@ -155,19 +156,11 @@ class Percolation {
 
         Point2D[] newPercolatedRegions = new Point2D[count];
 
-        System.out.println("New Percolated Regions");
         for (i = 0; i < count; i++) {
             newPercolatedRegions[i] = percolatedRegions[i];
-            System.out.println(newPercolatedRegions[i]);
         }
 
         Merge.sort(newPercolatedRegions);
-
-        System.out.println("After sort !!!!!!!!!!!!!!!!!!!!!　");
-        for (i = 0; i < count; i++) {
-            System.out.println(newPercolatedRegions[i]);
-        }
-
 
         return newPercolatedRegions;
     }
@@ -272,27 +265,36 @@ class Percolation {
 //        }
 //    }
 
-    public static void main(String args[]) {
+//    public static void main(String args[]) {
 //        test(args);
-        Percolation s = new Percolation(3);
-        s.open(1, 1);
-        System.out.println(s.isFull(1, 1));
-        System.out.println(s.percolates());
-        s.open(0, 1);
-        s.open(2, 0);
-        System.out.println(s.isFull(1, 1));
-        System.out.println(s.isFull(0, 1));
-        System.out.println(s.isFull(2, 0));
-        System.out.println(s.percolates());
-        s.open(2, 1);
-        System.out.println(s.isFull(1, 1));
-        System.out.println(s.isFull(0, 1));
-        System.out.println(s.isFull(2, 0));
-        System.out.println(s.isFull(2, 1));
-        System.out.println(s.percolates());
+//        Percolation s = new Percolation(2);
+//        s.open(1,1);
+//        s.PercolatedRegion();
+//
+//        s.open(0,0);
+//        s.PercolatedRegion();
+//
+//        s.open(0,1);
+//        s.PercolatedRegion();
 
-        s.PercolatedRegion();
+//        s.open(1, 1);
+//        System.out.println(s.isFull(1, 1));
+//        System.out.println(s.percolates());
+//        s.open(0, 1);
+//        s.open(2, 0);
+//        System.out.println(s.isFull(1, 1));
+//        System.out.println(s.isFull(0, 1));
+//        System.out.println(s.isFull(2, 0));
+//        System.out.println(s.percolates());
+//        s.open(2, 1);
+//        System.out.println(s.isFull(1, 1));
+//        System.out.println(s.isFull(0, 1));
+//        System.out.println(s.isFull(2, 0));
+//        System.out.println(s.isFull(2, 1));
+//        System.out.println(s.percolates());
+
+//        s.PercolatedRegion();
 
 
-    }
+//    }
 }
