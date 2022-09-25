@@ -14,7 +14,8 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 class Percolation {
     private static WeightedQuickUnionUF uf;
-    private static WeightedQuickUnionUF ufWithVirtualNode;
+    private static WeightedQuickUnionUF ufTopConnected;
+    private static WeightedQuickUnionUF ufTopAndBottomConnected;
     int size;
     boolean percolated;
     Node[] nodes;
@@ -31,7 +32,8 @@ class Percolation {
     public Percolation(int N) { // create N-by-N grid, with all sites blocked
         nodes = new Node[N * N];
         uf = new WeightedQuickUnionUF(N * N);
-        ufWithVirtualNode = new WeightedQuickUnionUF(N * N);
+        ufTopConnected = new WeightedQuickUnionUF((N*N));
+        ufTopAndBottomConnected = new WeightedQuickUnionUF(N * N);
         size = N;
         firsts = new int[N * N]; // store first node of each connected component (linked list)
         lasts = new int[N * N]; // store last node of each connected component (linked list)
@@ -50,8 +52,9 @@ class Percolation {
         }
 
         for (int x = 1; x < size; x++) {
-            ufWithVirtualNode.union(0, x); // union the first row
-            ufWithVirtualNode.union(size * size - 1, size * size - 1 - x); // union the last row
+            ufTopConnected.union(0, x); // union the first row
+            ufTopAndBottomConnected.union(0, x);
+            ufTopAndBottomConnected.union(size * size - 1, size * size - 1 - x); // union the last row
         }
     }
 
@@ -65,7 +68,8 @@ class Percolation {
             int newLast = lasts[uf.find(index - size)]; // new node last is the new last
 
             uf.union(index, index - size);
-            ufWithVirtualNode.union(index, index - size);
+            ufTopConnected.union(index, index - size);
+            ufTopAndBottomConnected.union(index, index - size);
 
             firsts[uf.find(index)] = newFirst;
             lasts[uf.find(index)] = newLast;
@@ -76,7 +80,8 @@ class Percolation {
             int newLast = lasts[uf.find(index + size)]; // new node last is the new last
 
             uf.union(index, index + size);
-            ufWithVirtualNode.union(index, index + size);
+            ufTopConnected.union(index, index + size);
+            ufTopAndBottomConnected.union(index, index + size);
 
             firsts[uf.find(index)] = newFirst;
             lasts[uf.find(index)] = newLast;
@@ -87,7 +92,8 @@ class Percolation {
             int newLast = lasts[uf.find(index - 1)]; // new node last is the new last
 
             uf.union(index, index - 1);
-            ufWithVirtualNode.union(index, index - 1);
+            ufTopConnected.union(index, index - 1);
+            ufTopAndBottomConnected.union(index, index - 1);
 
             firsts[uf.find(index)] = newFirst;
             lasts[uf.find(index)] = newLast;
@@ -98,7 +104,8 @@ class Percolation {
             int newLast = lasts[uf.find(index + 1)]; // new node last is the new last
 
             uf.union(index, index + 1);
-            ufWithVirtualNode.union(index, index + 1);
+            ufTopConnected.union(index, index + 1);
+            ufTopAndBottomConnected.union(index, index + 1);
 
             firsts[uf.find(index)] = newFirst;
             lasts[uf.find(index)] = newLast;
@@ -123,23 +130,14 @@ class Percolation {
     }
 
     public boolean isFull(int i, int j) { // is site (row i, column j) full?
-        if (size == 1) {
-            return isOpen(0, 0);
-        }
-
-        for (int x = 0; x < size; x++) {
-            if (uf.connected(x, i * size + j))
-                return true;
-        }
-        return false;
-
+        return ufTopConnected.connected(0, i * size + j);
     }
 
     public boolean percolates() { // does the system percolate?
         if (size == 1) {
-            return isFull(0,0);
+            return isOpen(0,0);
         }
-        return ufWithVirtualNode.connected(0, size * size - 1);
+        return ufTopAndBottomConnected.connected(0, size * size - 1);
     }
 
     public Point2D[] PercolatedRegion() {
@@ -149,7 +147,6 @@ class Percolation {
         int i = 0;
         int count = 0;
         while (i < percolatedRegions.length && percolatedRegions[i] != null) {
-            System.out.println(percolatedRegions[i]);
             count++;
             i++;
         }
@@ -161,6 +158,10 @@ class Percolation {
         }
 
         Merge.sort(newPercolatedRegions);
+
+        for (i = 0; i < count; i++) {
+            System.out.println(newPercolatedRegions[i]);
+        }
 
         return newPercolatedRegions;
     }
@@ -265,36 +266,35 @@ class Percolation {
 //        }
 //    }
 
-//    public static void main(String args[]) {
+    public static void main(String args[]) {
 //        test(args);
-//        Percolation s = new Percolation(2);
-//        s.open(1,1);
-//        s.PercolatedRegion();
-//
-//        s.open(0,0);
-//        s.PercolatedRegion();
-//
-//        s.open(0,1);
-//        s.PercolatedRegion();
+        Percolation s = new Percolation(2);
 
-//        s.open(1, 1);
-//        System.out.println(s.isFull(1, 1));
-//        System.out.println(s.percolates());
-//        s.open(0, 1);
-//        s.open(2, 0);
-//        System.out.println(s.isFull(1, 1));
-//        System.out.println(s.isFull(0, 1));
-//        System.out.println(s.isFull(2, 0));
-//        System.out.println(s.percolates());
-//        s.open(2, 1);
-//        System.out.println(s.isFull(1, 1));
-//        System.out.println(s.isFull(0, 1));
-//        System.out.println(s.isFull(2, 0));
-//        System.out.println(s.isFull(2, 1));
-//        System.out.println(s.percolates());
+        System.out.println(s.isOpen(0,0));
+        System.out.println(s.isFull(0,0));
+        System.out.println(s.percolates());
+        s.PercolatedRegion();
+        System.out.println(" ");
 
-//        s.PercolatedRegion();
+        s.open(0,0);
+        System.out.println(s.isOpen(0,0));
+        System.out.println(s.isFull(0,0));
+        System.out.println(s.percolates());
+        s.PercolatedRegion();
+        System.out.println(" ");
 
+        s.open(1,1);
+        System.out.println(s.isOpen(1,1));
+        System.out.println(s.isFull(1,1));
+        System.out.println(s.percolates());
+        s.PercolatedRegion();
+        System.out.println(" ");
 
-//    }
+        s.open(0,1);
+        System.out.println(s.isOpen(0,1));
+        System.out.println(s.isFull(0,1));
+        System.out.println(s.percolates());
+        s.PercolatedRegion();
+        System.out.println(" ");
+    }
 }
