@@ -1,7 +1,7 @@
 import edu.princeton.cs.algs4.Merge;
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
-import java.util.ArrayList;
+//import java.util.ArrayList;
 
 class Percolation {
     private static WeightedQuickUnionUF uf;
@@ -11,8 +11,11 @@ class Percolation {
     boolean percolated;
     int[] firsts;
     int[] lasts;
+    int[] lengths;
     Node[] nodes;
-    ArrayList<Point2D> percolatedRegions = new ArrayList<Point2D>();
+    Point2D[] percolatedRegions;
+//    ArrayList<Point2D> percolatedRegions = new ArrayList<Point2D>();
+
 
     private static class Node {
         private Point2D site;
@@ -27,16 +30,16 @@ class Percolation {
         size = N;
         firsts = new int[N * N]; // store first node of each connected component (linked list)
         lasts = new int[N * N]; // store last node of each connected component (linked list)
+        lengths = new int[N * N];
         nodes = new Node[N * N];
 
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < size * size; i++) {
             nodes[i] = new Node();
             nodes[i].site = new Point2D(i / N, i % N);
-            nodes[i].isOpen = false;
             firsts[i] = i;
             lasts[i] = i;
+            lengths[i] = 1;
         }
-
 
         for (int x = 1; x < size; x++) {
             ufTopConnected.union(0, x); // union the first row
@@ -50,61 +53,93 @@ class Percolation {
         nodes[index].isOpen = true;
 
         if (index - size >= 0 && nodes[index - size].isOpen) { // up
-            nodes[lasts[uf.find(index)]].next = nodes[firsts[uf.find(index - size)]];  // index node last -> new node first
-            int newLast = lasts[uf.find(index - size)]; // new node last is the new last
+            int findIndex = uf.find(index);
+            int findOtherIndex = uf.find(index - size);
+
+            nodes[lasts[findIndex]].next = nodes[firsts[findOtherIndex]];  // index node last -> new node first
+            int newLast = lasts[findOtherIndex]; // new node last is the new last
+            int oldLengthOne = lengths[findIndex];
+            int oldLengthTwo = lengths[findOtherIndex];
 
             uf.union(index, index - size);
+            findIndex = uf.find(index);
 
-            firsts[uf.find(index)] = index;
-            lasts[uf.find(index)] = newLast;
+            firsts[findIndex] = index;
+            lasts[findIndex] = newLast;
+            lengths[findIndex] = oldLengthOne + oldLengthTwo;
 
             ufTopConnected.union(index, index - size);
             ufTopAndBottomConnected.union(index, index - size);
         }
         if (index + size < size * size && nodes[index + size].isOpen && !uf.connected(index, index + size)) { // down
-            nodes[lasts[uf.find(index)]].next = nodes[firsts[uf.find(index + size)]];  // index node last -> new node first
-            int newLast = lasts[uf.find(index + size)]; // new node last is the new last
+            int findIndex = uf.find(index);
+            int findOtherIndex = uf.find(index + size);
+
+            nodes[lasts[findIndex]].next = nodes[firsts[findOtherIndex]];  // index node last -> new node first
+            int newLast = lasts[findOtherIndex]; // new node last is the new last
+            int oldLengthOne = lengths[findIndex];
+            int oldLengthTwo = lengths[findOtherIndex];
 
             uf.union(index, index + size);
+            findIndex = uf.find(index);
 
-            firsts[uf.find(index)] = index;
-            lasts[uf.find(index)] = newLast;
+            firsts[findIndex] = index;
+            lasts[findIndex] = newLast;
+            lengths[findIndex] = oldLengthOne + oldLengthTwo;
 
             ufTopConnected.union(index, index + size);
             ufTopAndBottomConnected.union(index, index + size);
         }
         if (index % size != 0 && nodes[index - 1].isOpen && !uf.connected(index, index - 1)) { // left
-            nodes[lasts[uf.find(index)]].next = nodes[firsts[uf.find(index - 1)]];  // index node last -> new node first
-            int newLast = lasts[uf.find(index - 1)]; // new node last is the new last
+            int findIndex = uf.find(index);
+            int findOtherIndex = uf.find(index - 1);
+
+            nodes[lasts[findIndex]].next = nodes[firsts[findOtherIndex]];  // index node last -> new node first
+            int newLast = lasts[findOtherIndex]; // new node last is the new last
+            int oldLengthOne = lengths[findIndex];
+            int oldLengthTwo = lengths[findOtherIndex];
 
             uf.union(index, index - 1);
+            findIndex = uf.find(index);
 
-            firsts[uf.find(index)] = index;
-            lasts[uf.find(index)] = newLast;
+            firsts[findIndex] = index;
+            lasts[findIndex] = newLast;
+            lengths[findIndex] = oldLengthOne + oldLengthTwo;
 
             ufTopConnected.union(index, index - 1);
             ufTopAndBottomConnected.union(index, index - 1);
         }
         if (index % size != size - 1 && nodes[index + 1].isOpen && !uf.connected(index, index + 1)) { // right
-            nodes[lasts[uf.find(index)]].next = nodes[firsts[uf.find(index + 1)]];  // index node last -> new node first
-            int newLast = lasts[uf.find(index + 1)]; // new node last is the new last
+            int findIndex = uf.find(index);
+            int findOtherIndex = uf.find(index + 1);
+
+            nodes[lasts[findIndex]].next = nodes[firsts[findOtherIndex]];  // index node last -> new node first
+            int newLast = lasts[findOtherIndex]; // new node last is the new last
+            int oldLengthOne = lengths[findIndex];
+            int oldLengthTwo = lengths[findOtherIndex];
 
             uf.union(index, index + 1);
+            findIndex = uf.find(index);
 
-            firsts[uf.find(index)] = index;
-            lasts[uf.find(index)] = newLast;
+            firsts[findIndex] = index;
+            lasts[findIndex] = newLast;
+            lengths[findIndex] = oldLengthOne + oldLengthTwo;
 
             ufTopConnected.union(index, index + 1);
             ufTopAndBottomConnected.union(index, index + 1);
         }
 
-        if (percolates() && !percolated) {
+        if (!percolated && percolates()) {
             percolated = true;
             Node node = nodes[index];
+            percolatedRegions = new Point2D[lengths[uf.find(index)]];
 
+            int x = 0;
             while (node != null) {
-                percolatedRegions.add(node.site);
+//                percolatedRegions.add(node.site);
+                percolatedRegions[x] = node.site;
                 node = node.next;
+                x++;
             }
         }
     }
@@ -128,12 +163,12 @@ class Percolation {
         // return the array of the sites of the percolated region in order (using Point2D default compare.to)
         // This function should always return the content of the percolated region AT THE MOMENT when percolation just happened.
 
-        Point2D[] newPercolatedRegions = new Point2D[percolatedRegions.size()];
-        newPercolatedRegions = percolatedRegions.toArray(newPercolatedRegions);
+//        Point2D[] newPercolatedRegions = new Point2D[percolatedRegions.size()];
+//        newPercolatedRegions = percolatedRegions.toArray(newPercolatedRegions);
 
-        Merge.sort(newPercolatedRegions);
+        Merge.sort(percolatedRegions);
 
-        return newPercolatedRegions;
+        return percolatedRegions;
     }
 }
 
