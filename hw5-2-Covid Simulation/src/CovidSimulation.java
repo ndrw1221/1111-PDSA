@@ -1,6 +1,15 @@
 import java.util.Arrays;
 import java.util.ArrayList;
 
+//import java.io.FileNotFoundException;
+//import java.io.FileReader;
+//import java.io.IOException;
+//
+//import org.json.simple.JSONArray;
+//import org.json.simple.JSONObject;
+//import org.json.simple.parser.JSONParser;
+//import org.json.simple.parser.ParseException;
+
 class CovidSimulation {
 
 //    class City implements Comparable<City> {
@@ -90,14 +99,25 @@ class CovidSimulation {
         }
 
         //Update infected days left
-//        System.out.println(recoverDay.get(DateOfArrival - 1)[ToCity]);
+        //If recovery day of traveler(s) later than that of the destination city
         if (recoverDay.get(DateOfDeparture - 1)[FromCity] > recoverDay.get(DateOfArrival - 1)[ToCity]) {
-            for (int i = 0; i < recoverDay.get(DateOfDeparture - 1)[FromCity] - recoverDay.get(DateOfArrival - 1)[ToCity]; i++) {
-                if (recoverDay.get(DateOfDeparture - 1)[FromCity] - attackedDay.get(DateOfDeparture - 1)[ToCity] <= 7) {
+            if (recoverDay.get(DateOfArrival - 1)[ToCity] == 0) {
+                //If traveler(s) travel(s) to an uninfected city
+                for (int i = 0; i < recoverDay.get(DateOfDeparture - 1)[FromCity] - DateOfArrival; i++) {
+                    //The attacked day would be the DateOArrival
+                    attackedDay.get(DateOfArrival - 1 + i)[ToCity] = DateOfArrival;
+                    recoverDay.get(DateOfArrival - 1 + i)[ToCity] = recoverDay.get(DateOfDeparture - 1)[FromCity];
+                }
+            } else if (recoverDay.get(DateOfDeparture - 1)[FromCity] - attackedDay.get(DateOfDeparture - 1)[ToCity] <= 6) {
+                //If the total infected days wouldn't be longer than 7 days
+                for (int i = 0; i < recoverDay.get(DateOfDeparture - 1)[FromCity] - DateOfArrival; i++) {
+                    attackedDay.get(DateOfArrival - 1 + i)[ToCity] = attackedDay.get(DateOfDeparture)[ToCity];
+                    recoverDay.get(DateOfArrival - 1 + i)[ToCity] = recoverDay.get(DateOfDeparture - 1)[FromCity];
+                }
+            } else {
+                for (int i = 0; i <  6 - recoverDay.get(DateOfDeparture - 1)[ToCity] + attackedDay.get(DateOfDeparture - 1)[ToCity]; i++) {
                     attackedDay.get(DateOfArrival + i)[ToCity] = attackedDay.get(DateOfDeparture)[ToCity];
-                    recoverDay.get(DateOfArrival + i)[ToCity] = recoverDay.get(DateOfDeparture - 1)[FromCity];
-                } else {
-                    
+                    recoverDay.get(DateOfArrival + i)[ToCity] = attackedDay.get(DateOfDeparture - 1)[ToCity] + 6;
                 }
             }
         }
@@ -117,7 +137,7 @@ class CovidSimulation {
             //If a city IS infected
             if (recoverDay.get(date - 1)[i] != 0) {
                 //Get infected city with most patients
-                if (cities.get(date - 1)[i] > max) {
+                if (cities.get(date - 1)[i] > cities.get(date - 1)[max]) {
                     max = i;
                 }
             }
@@ -136,35 +156,41 @@ class CovidSimulation {
     }
 
     public static void main(String[] args) {
-        CovidSimulation sol = new CovidSimulation(new int[] {10, 100, 15, 25, 10, 13});
-
-        sol.virusAttackPlan(0, 1);
-        sol.virusAttackPlan(3, 3);
-        sol.TravelPlan(10, 3, 0, 3, 4);
-        sol.virusAttackPlan(5, 5);
-        sol.TravelPlan(5, 5, 0, 5, 6);
-
-        for (int i = 0; i < sol.cities.size(); i++) {
-            System.out.println("Day" + (i + 1) + ":");
-//            System.out.println(Arrays.toString(sol.cities.get(i)));
-            System.out.println(Arrays.toString(sol.attackedDay.get(i)));
-            System.out.println(Arrays.toString(sol.recoverDay.get(i)));
-        }
-
+//        test t = new test(args);
+//        CovidSimulation sol = new CovidSimulation(new int[] {500, 100, 50, 250});
+//        sol.virusAttackPlan(0, 3);
+//        sol.TravelPlan(200, 0, 3, 1, 5);
+//        sol.TravelPlan(50, 1, 0, 1, 4);
+//        sol.TravelPlan(150, 0, 2, 1, 3);
+//        sol.virusAttackPlan(1, 1);
+//        sol.TravelPlan(50, 3, 2, 1, 2);
+//        sol.TravelPlan(10, 1, 3, 1, 2);
+//        sol.TravelPlan(70, 3, 0, 2, 3);
+//        sol.virusAttackPlan(3, 3);
+//
+//        System.out.println(sol.CityWithTheMostPatient(4));
+//        System.out.println(sol.CityWithTheMostPatient(5));
+//        System.out.println(sol.CityWithTheMostPatient(6));
+//
+//        sol.virusAttackPlan(0, 1);
 //        sol.virusAttackPlan(4, 3);
 //        sol.TravelPlan(3, 0, 3, 3, 4);
 //        sol.TravelPlan(3, 4, 0, 3, 4);
-//
 //        System.out.println(sol.CityWithTheMostPatient(2));
-//        // output = 0
+////        output = 0
 //
 //        sol.virusAttackPlan(5, 5);
 //        sol.TravelPlan(1, 5, 0, 5, 6);
-//
 //        System.out.println(sol.CityWithTheMostPatient(4));
-//        // output = 3
+////         output = 3
 //        System.out.println(sol.CityWithTheMostPatient(8));
-//        // output = 5
+////         output = 5
+//        for (int i = 0; i < sol.cities.size(); i++) {
+//            System.out.println("Day" + (i + 1) + ":");
+//            System.out.println(Arrays.toString(sol.cities.get(i)));
+//            System.out.println(Arrays.toString(sol.attackedDay.get(i)));
+//            System.out.println(Arrays.toString(sol.recoverDay.get(i)));
+//        }
 
         //day 1:{10, 100, 15, 25, 10, 13}
         //infectedList:{1, 0, 0, 0, 0, 0}
@@ -184,3 +210,67 @@ class CovidSimulation {
         //infectedList:{0, 0, 0, 0, 0, 1}
     }
 }
+
+//class test {
+//    public test(String[] args) {
+//        CovidSimulation g;
+//        JSONParser jsonParser = new JSONParser();
+//        try (FileReader reader = new FileReader(args[0])){
+//            JSONArray all = (JSONArray) jsonParser.parse(reader);
+//            int waSize = 0;
+//            int count = 0;
+//            for(Object CaseInList : all){
+//                JSONArray a = (JSONArray) CaseInList;
+//                //Board Setup
+//                JSONObject argsSetting = (JSONObject) a.get(0);
+//                a.remove(0);
+//
+//                JSONArray argSettingArr = (JSONArray) argsSetting.get("args");
+//                int citySetting[] = new int[argSettingArr.size()];
+//                for(int i=0;i<argSettingArr.size();i++){
+//                    citySetting[i]=(Integer.parseInt(argSettingArr.get(i).toString()));
+//                }
+//                g = new CovidSimulation(citySetting);
+//
+//                for (Object o : a)
+//                {
+//                    JSONObject person = (JSONObject) o;
+//                    String func =  person.get("func").toString();
+//                    JSONArray arg = (JSONArray) person.get("args");
+//
+//                    switch(func){
+//                        case "virusPlan":
+//                            g.virusAttackPlan(Integer.parseInt(arg.get(0).toString()),
+//                                    Integer.parseInt(arg.get(1).toString()));
+//                            break;
+//                        case "TravelPlan":
+//                            g.TravelPlan(Integer.parseInt(arg.get(0).toString()),Integer.parseInt(arg.get(1).toString()),Integer.parseInt(arg.get(2).toString()),
+//                                    Integer.parseInt(arg.get(3).toString()),Integer.parseInt(arg.get(4).toString()));
+//                            break;
+//
+//                        case "CityMax":
+//                            count++;
+//                            int ans_sol = g.CityWithTheMostPatient(Integer.parseInt(arg.get(0).toString()));
+//                            Long answer = (Long) person.get("answer");
+//                            int ans = Integer.parseInt(answer.toString());
+//                            if(ans_sol==ans){
+//                                System.out.println(count+": AC");
+//                            }else{
+//                                waSize++;
+//                                System.out.println(count+": WA");
+//                            }
+//                    }
+//
+//                }
+//            }
+//            System.out.println("Score: " + (count-waSize) + " / " + count + " ");
+//        }catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        } catch (ParseException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//}
