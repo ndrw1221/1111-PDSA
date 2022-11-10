@@ -1,6 +1,8 @@
 import java.util.Arrays;
 import java.util.ArrayList;
 
+import edu.princeton.cs.algs4.MinPQ;
+
 //import java.io.FileNotFoundException;
 //import java.io.FileReader;
 //import java.io.IOException;
@@ -11,28 +13,46 @@ import java.util.ArrayList;
 //import org.json.simple.parser.ParseException;
 
 class CovidSimulation {
-
-//    class City implements Comparable<City> {
-//        int cityIdx;
-//        ArrayList<Integer> citizenNum = new ArrayList<Integer>();
-//        ArrayList<Integer> infectedDaysLeft = new ArrayList<Integer>();
-//
-//        City(int index, int citizenNum, int infectedDaysLeft) {
-//            this.cityIdx = index;
-//            this.citizenNum.add(citizenNum);
-//            this.infectedDaysLeft.add(infectedDaysLeft);
-//        }
-//
-//        @Override
-//        public int compareTo(City o) {
-//            return o.citizenNum.get(citizenNum.size() - 1) - this.citizenNum.get(citizenNum.size() - 1);
-//        }
-//    }
-
     private int Date = 1; //An integer to keep track of the latest date
+
+    MinPQ<Event> eventMinPQ = new MinPQ<Event>();
     ArrayList<int[]> cities = new ArrayList<int[]>();
     ArrayList<int[]> attackedDay = new ArrayList<int[]>();
     ArrayList<int[]> recoverDay = new ArrayList<int[]>();
+
+    class Event implements Comparable<Event> {
+        int date;
+        int city;
+        int numberOfTraveler;
+        int dateOfDeparture;
+        int fromCity;
+
+        public int compareTo(Event o) {
+            if (this.date == o.date) return this.numberOfTraveler - o.numberOfTraveler;
+            return this.date - o.date;
+        }
+    }
+
+    public void virusAttackPlan(int city, int date) {
+        Event event = new Event();
+        event.city = city;
+        event.date = date;
+
+        eventMinPQ.insert(event);
+    }
+
+    public void TravelPlan(int NumberOfTraveller, int FromCity, int ToCity, int DateOfDeparture, int DateOfArrival) {
+        Event event = new Event();
+        event.numberOfTraveler = NumberOfTraveller;
+        event.fromCity = FromCity;
+        event.city = ToCity;
+        event.date = DateOfArrival;
+        event.dateOfDeparture = DateOfDeparture;
+
+        eventMinPQ.insert(event);
+    }
+
+
 
 
     public CovidSimulation(int[] Num_Of_Citizen) {
@@ -42,7 +62,7 @@ class CovidSimulation {
         recoverDay.add(new int[Num_Of_Citizen.length]);
     }
 
-    public void virusAttackPlan(int city, int date){
+    public void DoVirusAttackPlan(int city, int date){
         //Covid is a highly intelligent being, they plan their attacks carefully.
         //The date on which Covid attacks a specific city would be defined here
 
@@ -74,7 +94,7 @@ class CovidSimulation {
     }
 
 
-    public void TravelPlan(int NumberOfTraveller, int FromCity, int ToCity, int DateOfDeparture, int DateOfArrival){
+    public void DoTravelPlan(int NumberOfTraveller, int FromCity, int ToCity, int DateOfDeparture, int DateOfArrival){
         //The information of travellers' plan would be written here.
         //Since everyone travel with different methods, the duration to travel from City A to B would not be constant (we tried our best to simplify the problem instead of giving an array of data!)
 
@@ -128,6 +148,21 @@ class CovidSimulation {
 
         //if there are more than two cities with the same amount of patients, return the largest index value.
         //if every city is clean, please return -1.
+
+//        if (date > Date) {
+            while(!eventMinPQ.isEmpty() && eventMinPQ.min().date <= date) {
+                Event event = eventMinPQ.delMin();
+                if (event.numberOfTraveler == 0) {
+                    DoVirusAttackPlan(event.city, event.date);
+//                    System.out.println("DoVirusAttackPlan: Day " + event.date + ", City " + event.city);
+                } else {
+                    DoTravelPlan(event.numberOfTraveler, event.fromCity, event.city, event.dateOfDeparture, event.date);
+//                    System.out.println("DoTravelPlan: Day " + event.date + ", City " + event.city);
+                }
+            }
+//        }
+
+
         if (allZero(recoverDay.get(date - 1))) {
             return -1;
         }
@@ -168,6 +203,15 @@ class CovidSimulation {
 //        sol.TravelPlan(70, 3, 0, 2, 3);
 //        sol.virusAttackPlan(3, 3);
 //
+//        while(!sol.eventMinPQ.isEmpty()) {
+//            System.out.print("Day: " + sol.eventMinPQ.min().date + ", Event: ");
+//            System.out.println(sol.eventMinPQ.delMin().numberOfTraveler == 0 ? "Travel Plan" : "Virus Attack Plan");
+////            System.out.println(sol.eventMinPQ.delMin().numberOfTraveler);
+//        }
+
+//        System.out.println(sol.CityWithTheMostPatient(1));
+//        System.out.println(sol.CityWithTheMostPatient(2));
+//        System.out.println(sol.CityWithTheMostPatient(3));
 //        System.out.println(sol.CityWithTheMostPatient(4));
 //        System.out.println(sol.CityWithTheMostPatient(5));
 //        System.out.println(sol.CityWithTheMostPatient(6));
