@@ -16,16 +16,17 @@ class CovidSimulation {
     private int Date = 1; //An integer to keep track of the latest date
 
     MinPQ<Event> eventMinPQ = new MinPQ<Event>();
-    ArrayList<int[]> cities = new ArrayList<int[]>();
-    ArrayList<int[]> attackedDay = new ArrayList<int[]>();
-    ArrayList<int[]> recoverDay = new ArrayList<int[]>();
+    int[] cities;
+    int[] recoveryDay;
+    int[] maxRecoveryDay;
 
     class Event implements Comparable<Event> {
+        String type;
         int date;
         int city;
         int numberOfTraveler;
-        int dateOfDeparture;
-        int fromCity;
+        int dateOfRecovery;
+        int maxDateOfRecovery;
 
         public int compareTo(Event o) {
             if (this.date == o.date) return this.numberOfTraveler - o.numberOfTraveler;
@@ -34,22 +35,32 @@ class CovidSimulation {
     }
 
     public void virusAttackPlan(int city, int date) {
-        Event event = new Event();
-        event.city = city;
-        event.date = date;
+        Event eventVirusAttack = new Event();
+        eventVirusAttack.type = "Virus attack";
+        eventVirusAttack.city = city;
+        eventVirusAttack.date = date;
 
-        eventMinPQ.insert(event);
+        eventMinPQ.insert(eventVirusAttack);
     }
 
     public void TravelPlan(int NumberOfTraveller, int FromCity, int ToCity, int DateOfDeparture, int DateOfArrival) {
-        Event event = new Event();
-        event.numberOfTraveler = NumberOfTraveller;
-        event.fromCity = FromCity;
-        event.city = ToCity;
-        event.date = DateOfArrival;
-        event.dateOfDeparture = DateOfDeparture;
+        Event eventDeparture = new Event();
+        Event eventArrival = new Event();
 
-        eventMinPQ.insert(event);
+        eventDeparture.type = "Departure";
+        eventDeparture.date = DateOfDeparture;
+        eventDeparture.city = FromCity;
+        eventDeparture.numberOfTraveler = NumberOfTraveller;
+
+        eventArrival.type = "Arrival";
+        eventArrival.date = DateOfArrival;
+        eventDeparture.city = ToCity;
+        eventDeparture.numberOfTraveler = NumberOfTraveller;
+        eventDeparture.dateOfRecovery = recoveryDay[FromCity];
+        eventDeparture.maxDateOfRecovery = maxRecoveryDay[FromCity];
+
+        eventMinPQ.insert(eventArrival);
+        eventMinPQ.insert(eventDeparture);
     }
 
 
@@ -57,11 +68,12 @@ class CovidSimulation {
 
     public CovidSimulation(int[] Num_Of_Citizen) {
         //The initial number of people in each city is defined here.
-        cities.add(Num_Of_Citizen);
-        attackedDay.add(new int[Num_Of_Citizen.length]);
-        recoverDay.add(new int[Num_Of_Citizen.length]);
+        cities = new int[Num_Of_Citizen.length];
+        recoveryDay = new int[Num_Of_Citizen.length];
+        maxRecoveryDay = new int[Num_Of_Citizen.length];
     }
 
+    // NEED REFACTOR!!!
     public void DoVirusAttackPlan(int city, int date){
         //Covid is a highly intelligent being, they plan their attacks carefully.
         //The date on which Covid attacks a specific city would be defined here
@@ -94,53 +106,63 @@ class CovidSimulation {
     }
 
 
-    public void DoTravelPlan(int NumberOfTraveller, int FromCity, int ToCity, int DateOfDeparture, int DateOfArrival){
-        //The information of travellers' plan would be written here.
-        //Since everyone travel with different methods, the duration to travel from City A to B would not be constant (we tried our best to simplify the problem instead of giving an array of data!)
+//    public void DoTravelPlan(int NumberOfTraveller, int FromCity, int ToCity, int DateOfDeparture, int DateOfArrival){
+//        //The information of travellers' plan would be written here.
+//        //Since everyone travel with different methods, the duration to travel from City A to B would not be constant (we tried our best to simplify the problem instead of giving an array of data!)
+//
+//        //Update total days
+//        if (DateOfArrival > Date) {
+//            for (int i = 0; i < DateOfArrival - Date; i++) {
+//                // add the last element in Arraylist to ArrayList
+//                cities.add(cities.get(cities.size() - 1).clone());
+//                attackedDay.add(attackedDay.get(attackedDay.size() - 1).clone());
+//                recoverDay.add(recoverDay.get(recoverDay.size() - 1).clone());
+//            }
+//
+//            Date = DateOfArrival;
+//        }
+//
+//        //Update citizen number
+//        for (int i = 0; i <= cities.size() - DateOfDeparture; i++) {
+//            cities.get(DateOfDeparture - 1 + i)[FromCity] -= NumberOfTraveller;
+//            if (DateOfArrival - 1 + i < cities.size()) {
+//                cities.get(DateOfArrival - 1 + i)[ToCity] += NumberOfTraveller;
+//            }
+//        }
+//
+//        //Update infected days left
+//        //If recovery day of traveler(s) later than that of the destination city
+//        if (recoverDay.get(DateOfDeparture - 1)[FromCity] > recoverDay.get(DateOfArrival - 1)[ToCity]) {
+//            if (recoverDay.get(DateOfArrival - 1)[ToCity] == 0) {
+//                //If traveler(s) travel(s) to an uninfected city
+//                for (int i = 0; i < recoverDay.get(DateOfDeparture - 1)[FromCity] - DateOfArrival; i++) {
+//                    //The attacked day would be the DateOArrival
+//                    attackedDay.get(DateOfArrival - 1 + i)[ToCity] = DateOfArrival;
+//                    recoverDay.get(DateOfArrival - 1 + i)[ToCity] = recoverDay.get(DateOfDeparture - 1)[FromCity];
+//                }
+//            } else if (recoverDay.get(DateOfDeparture - 1)[FromCity] - attackedDay.get(DateOfDeparture - 1)[ToCity] <= 6) {
+//                //If the total infected days wouldn't be longer than 7 days
+//                for (int i = 0; i < recoverDay.get(DateOfDeparture - 1)[FromCity] - DateOfArrival; i++) {
+//                    attackedDay.get(DateOfArrival - 1 + i)[ToCity] = attackedDay.get(DateOfDeparture)[ToCity];
+//                    recoverDay.get(DateOfArrival - 1 + i)[ToCity] = recoverDay.get(DateOfDeparture - 1)[FromCity];
+//                }
+//            } else {
+//                for (int i = 0; i <  6 - recoverDay.get(DateOfDeparture - 1)[ToCity] + attackedDay.get(DateOfDeparture - 1)[ToCity]; i++) {
+//                    attackedDay.get(DateOfArrival + i)[ToCity] = attackedDay.get(DateOfDeparture)[ToCity];
+//                    recoverDay.get(DateOfArrival + i)[ToCity] = attackedDay.get(DateOfDeparture - 1)[ToCity] + 6;
+//                }
+//            }
+//        }
+//    }
 
-        //Update total days
-        if (DateOfArrival > Date) {
-            for (int i = 0; i < DateOfArrival - Date; i++) {
-                // add the last element in Arraylist to ArrayList
-                cities.add(cities.get(cities.size() - 1).clone());
-                attackedDay.add(attackedDay.get(attackedDay.size() - 1).clone());
-                recoverDay.add(recoverDay.get(recoverDay.size() - 1).clone());
-            }
+    // NEED IMPLEMENTING
+    public void DoEventDeparture(int NumberOfTraveller, int FromCity, int DateOfDeparture) {
 
-            Date = DateOfArrival;
-        }
+    }
 
-        //Update citizen number
-        for (int i = 0; i <= cities.size() - DateOfDeparture; i++) {
-            cities.get(DateOfDeparture - 1 + i)[FromCity] -= NumberOfTraveller;
-            if (DateOfArrival - 1 + i < cities.size()) {
-                cities.get(DateOfArrival - 1 + i)[ToCity] += NumberOfTraveller;
-            }
-        }
+    // NEED IMPLEMENTING
+    public void DoEventArrival(int NumberOfTraveller, int ToCity, int DateOfArrival, int RecoveryDate, int MaxRecoveryDate) {
 
-        //Update infected days left
-        //If recovery day of traveler(s) later than that of the destination city
-        if (recoverDay.get(DateOfDeparture - 1)[FromCity] > recoverDay.get(DateOfArrival - 1)[ToCity]) {
-            if (recoverDay.get(DateOfArrival - 1)[ToCity] == 0) {
-                //If traveler(s) travel(s) to an uninfected city
-                for (int i = 0; i < recoverDay.get(DateOfDeparture - 1)[FromCity] - DateOfArrival; i++) {
-                    //The attacked day would be the DateOArrival
-                    attackedDay.get(DateOfArrival - 1 + i)[ToCity] = DateOfArrival;
-                    recoverDay.get(DateOfArrival - 1 + i)[ToCity] = recoverDay.get(DateOfDeparture - 1)[FromCity];
-                }
-            } else if (recoverDay.get(DateOfDeparture - 1)[FromCity] - attackedDay.get(DateOfDeparture - 1)[ToCity] <= 6) {
-                //If the total infected days wouldn't be longer than 7 days
-                for (int i = 0; i < recoverDay.get(DateOfDeparture - 1)[FromCity] - DateOfArrival; i++) {
-                    attackedDay.get(DateOfArrival - 1 + i)[ToCity] = attackedDay.get(DateOfDeparture)[ToCity];
-                    recoverDay.get(DateOfArrival - 1 + i)[ToCity] = recoverDay.get(DateOfDeparture - 1)[FromCity];
-                }
-            } else {
-                for (int i = 0; i <  6 - recoverDay.get(DateOfDeparture - 1)[ToCity] + attackedDay.get(DateOfDeparture - 1)[ToCity]; i++) {
-                    attackedDay.get(DateOfArrival + i)[ToCity] = attackedDay.get(DateOfDeparture)[ToCity];
-                    recoverDay.get(DateOfArrival + i)[ToCity] = attackedDay.get(DateOfDeparture - 1)[ToCity] + 6;
-                }
-            }
-        }
     }
 
     public int CityWithTheMostPatient(int date){
@@ -149,30 +171,31 @@ class CovidSimulation {
         //if there are more than two cities with the same amount of patients, return the largest index value.
         //if every city is clean, please return -1.
 
-//        if (date > Date) {
-            while(!eventMinPQ.isEmpty() && eventMinPQ.min().date <= date) {
-                Event event = eventMinPQ.delMin();
-                if (event.numberOfTraveler == 0) {
-                    DoVirusAttackPlan(event.city, event.date);
-//                    System.out.println("DoVirusAttackPlan: Day " + event.date + ", City " + event.city);
-                } else {
-                    DoTravelPlan(event.numberOfTraveler, event.fromCity, event.city, event.dateOfDeparture, event.date);
-//                    System.out.println("DoTravelPlan: Day " + event.date + ", City " + event.city);
-                }
+        while(!eventMinPQ.isEmpty() && eventMinPQ.min().date <= date) {
+            Event event = eventMinPQ.delMin();
+            if (event.type == "Virus attack") {
+                DoVirusAttackPlan(event.city, event.date);
+//                System.out.println("DoVirusAttackPlan: Day " + event.date + ", City " + event.city);
+            } else if (event.type == "Departure") {
+                DoEventDeparture(event.numberOfTraveler, event.city, event.date);
+//                System.out.println("DoEventDeparture: Day " + event.date + ", City " + event.city);
+            } else {
+                DoEventArrival(event.numberOfTraveler, event.city, event.date, event.dateOfRecovery, event.maxDateOfRecovery);
+//                System.out.println("DoEventArrival: Day " + event.date + ", City " + event.city);
             }
-//        }
+        }
 
 
-        if (allZero(recoverDay.get(date - 1))) {
+        if (allZero(recoveryDay)) {
             return -1;
         }
 
         int max = 0;
-        for (int i = 0; i < recoverDay.get(date - 1).length; i++) {
+        for (int i = 0; i < recoveryDay.length; i++) {
             //If a city IS infected
-            if (recoverDay.get(date - 1)[i] != 0) {
+            if (recoveryDay[i] != 0) {
                 //Get infected city with most patients
-                if (cities.get(date - 1)[i] > cities.get(date - 1)[max]) {
+                if (cities[i] > cities[max]) {
                     max = i;
                 }
             }
@@ -317,4 +340,4 @@ class CovidSimulation {
 //        }
 //    }
 //
-//}
+//}=
